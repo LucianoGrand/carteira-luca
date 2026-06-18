@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrar · Carteira Luca</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f4f6f9;--panel:#fff;--panel2:#f1f4f8;--line:#e4e8ee;--txt:#1b2430;
+        --muted:#67727f;--accent:#0e9f6e;--accent2:#057a55;--red:#e02424}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);
+       min-height:100vh;display:grid;place-items:center}
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:18px;
+       padding:38px 34px;width:360px;box-shadow:0 6px 24px rgba(16,24,40,.08)}
+  h1{font-size:21px;font-weight:800;letter-spacing:-.3px}
+  p.sub{color:var(--muted);font-size:13px;margin:6px 0 26px}
+  label{display:block;font-size:13px;font-weight:600;margin-bottom:8px}
+  input{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+        padding:13px 14px;border-radius:10px;font-size:15px;font-family:inherit}
+  input:focus{outline:none;border-color:var(--accent)}
+  button{width:100%;background:var(--accent);color:#fff;border:none;padding:13px;border-radius:10px;
+         font-weight:700;font-size:15px;cursor:pointer;margin-top:16px}
+  button:hover{background:var(--accent2)}
+  .err{color:var(--red);font-size:13px;margin-top:12px;display:none}
+  .err.on{display:block}
+</style>
+</head>
+<body>
+  <form class="box" id="form">
+    <h1>Carteira · Luca</h1>
+    <p class="sub">Acesso restrito. Informe sua senha para continuar.</p>
+    <label for="senha">Senha</label>
+    <input type="password" id="senha" autocomplete="current-password" autofocus>
+    <button type="submit">Entrar</button>
+    <div class="err" id="err">Senha incorreta.</div>
+  </form>
+<script>
+document.getElementById('form').onsubmit=async e=>{
+  e.preventDefault();
+  const err=document.getElementById('err');err.classList.remove('on');
+  const fd=new FormData();fd.append('senha',document.getElementById('senha').value);
+  const r=await fetch('/api/login',{method:'POST',body:fd});
+  if(r.ok){location.href='/';}
+  else{err.classList.add('on');document.getElementById('senha').select();}
+};
+</script>
+</body>
+</html>

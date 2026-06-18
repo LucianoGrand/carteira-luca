@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+backend/storage/uploads/
+backend/storage/*.db
+.DS_Store
+.claude/launch.json

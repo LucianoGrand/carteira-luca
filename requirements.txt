@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pdfplumber
+openpyxl
+requests
+SQLAlchemy
+psycopg2-binary
+itsdangerous

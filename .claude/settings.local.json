@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"/Users/lucianorosa/Luca Carteira\" && ls -la && echo \"---\" && ls -la ~/Downloads/ | grep -i luca)",
+      "Bash(python3 -c \"import openpyxl; print\\('ok'\\)\")",
+      "Bash(python3)",
+      "Bash(python3 -m pip install --quiet --user fastapi uvicorn python-multipart)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(python3 -c \"import fastapi, uvicorn, multipart; print\\('backend libs OK'\\)\")",
+      "Bash(python3 -m venv .venv)",
+      "Bash(./.venv/bin/pip install *)",
+      "Bash(./.venv/bin/python -c \"import fastapi, uvicorn, multipart, pdfplumber, openpyxl, requests; print\\('todas as libs OK'\\)\")",
+      "Bash(./.venv/bin/python backend/parser_br.py)",
+      "Bash(./.venv/bin/python -c ' *)",
+      "Bash(../.venv/bin/python consolidate.py)",
+      "Bash(../.venv/bin/python -c ' *)",
+      "Bash(../.venv/bin/python -m uvicorn app:app --host 127.0.0.1 --port 8848 --log-level warning)",
+      "Bash(curl -s http://127.0.0.1:8848/api/portfolio)",
+      "Bash(./.venv/bin/python -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\('patrimonio',d['patrimonio_total'],'| cats',len\\(d['categorias']\\),'| ativos',len\\(d['ativos']\\),'| ref',d['data_referencia']\\)\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://127.0.0.1:8848/)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://127.0.0.1:8848/atualizar)",
+      "Bash(curl -s -X POST http://127.0.0.1:8848/api/update -F 'pdf_br=@/Users/lucianorosa/Downloads/XPerformance - 7605585 - Ref.29.05.pdf' -F usd_brl=5.32 -F bitcoin_brl=60000)",
+      "Bash(./.venv/bin/python -m json.tool)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(chmod +x iniciar.command)",
+      "Bash(./.venv/bin/python)",
+      "Bash(../.venv/bin/python parser_us.py)",
+      "Bash(../.venv/bin/python)",
+      "Bash(curl -s -X POST http://127.0.0.1:8848/api/update -F 'pdf_br=@/Users/lucianorosa/Downloads/XPerformance - 7605585 - Ref.29.05.pdf' -F 'pdf_us=@/Users/lucianorosa/Downloads/XP Investimentos - Investimento Global.pdf' -F bitcoin_brl=58382.51)",
+      "WebSearch",
+      "Bash(./.venv/bin/python -c \"import sqlalchemy, itsdangerous; print\\('sqlalchemy', sqlalchemy.__version__, 'ok'\\)\")",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git -c user.email=atendimento@wealthygroup.com.br -c user.name=\"Wealthy\" commit -q -m \"Carteira Luca: app, banco de dados e login\")",
+      "Bash(gh auth *)"
+    ]
+  }
+}

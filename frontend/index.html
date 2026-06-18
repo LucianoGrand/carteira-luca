@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carteira · Luca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#f4f6f9; --panel:#ffffff; --panel2:#f1f4f8; --line:#e4e8ee;
+    --txt:#1b2430; --muted:#67727f; --accent:#0e9f6e; --accent2:#057a55;
+    --gold:#b88203; --red:#e02424; --blue:#2563eb;
+    --shadow:0 1px 3px rgba(16,24,40,.06),0 1px 2px rgba(16,24,40,.04);
+    --grid:#eaeef3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);
+       -webkit-font-smoothing:antialiased;line-height:1.45}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 28px 80px}
+  /* header */
+  header{border-bottom:1px solid var(--line);background:rgba(255,255,255,.9);backdrop-filter:blur(8px);
+         position:sticky;top:0;z-index:10}
+  .head{max-width:1280px;margin:0 auto;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .brand{display:flex;align-items:center;gap:14px}
+  .brand h1{font-size:17px;font-weight:800;letter-spacing:-.2px}
+  .brand p{font-size:12px;color:var(--muted)}
+  .head-right{display:flex;align-items:center;gap:18px}
+  .ref{text-align:right;font-size:12px;color:var(--muted)}
+  .ref b{color:var(--txt)}
+  .btn{background:var(--accent);color:#04130d;border:none;padding:10px 18px;border-radius:10px;
+       font-weight:700;font-size:13px;cursor:pointer;text-decoration:none;display:inline-block;transition:.15s}
+  .btn:hover{background:var(--accent2);transform:translateY(-1px)}
+  /* kpis */
+  .kpis{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:16px;margin-top:28px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow)}
+  .kpi .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+  .brtag{display:inline-block;font-size:9px;background:rgba(37,99,235,.1);color:var(--blue);
+         padding:1px 6px;border-radius:5px;letter-spacing:.3px;margin-left:4px;vertical-align:middle}
+  .kpi .big{font-size:32px;font-weight:800;margin-top:8px;letter-spacing:-.5px}
+  .kpi .sub{font-size:12px;color:var(--muted);margin-top:6px}
+  .pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:700}
+  .pos{background:rgba(16,185,129,.14);color:var(--accent2)}
+  .neg{background:rgba(248,113,113,.14);color:var(--red)}
+  .split{display:flex;gap:10px;margin-top:14px}
+  .split>div{flex:1;background:var(--panel2);border-radius:10px;padding:10px 12px}
+  .split .t{font-size:11px;color:var(--muted)}
+  .split .v{font-size:15px;font-weight:700;margin-top:2px}
+  /* layout grid */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  .card h2{font-size:14px;font-weight:700;margin-bottom:4px}
+  .card .hint{font-size:12px;color:var(--muted);margin-bottom:16px}
+  .donut-wrap{display:flex;gap:20px;align-items:center}
+  .donut-box{position:relative;width:210px;height:210px;flex:0 0 210px}
+  .donut-center{position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none}
+  .donut-center .a{font-size:11px;color:var(--muted)}
+  .donut-center .b{font-size:20px;font-weight:800}
+  .legend{flex:1;display:flex;flex-direction:column;gap:7px}
+  .leg{display:flex;align-items:center;gap:9px;font-size:13px}
+  .dot{width:10px;height:10px;border-radius:3px;flex:0 0 10px}
+  .leg .nm{flex:1;color:var(--txt)}
+  .leg .pc{font-weight:700}
+  .leg .vl{color:var(--muted);font-size:11px;width:92px;text-align:right}
+  /* meta bars */
+  .mrow{margin-bottom:13px}
+  .mrow .top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+  .mrow .top .g{font-weight:700}
+  .track{height:9px;background:var(--panel2);border-radius:6px;position:relative;overflow:visible}
+  .fill{height:100%;border-radius:6px}
+  .meta-mark{position:absolute;top:-3px;width:2px;height:15px;background:var(--txt);opacity:.85}
+  .full{grid-column:1/-1}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;
+     letter-spacing:.5px;padding:9px 10px;border-bottom:1px solid var(--line)}
+  td{padding:10px;border-bottom:1px solid var(--panel2)}
+  tr:hover td{background:var(--panel2)}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .tag{font-size:10px;padding:2px 7px;border-radius:6px;font-weight:700}
+  .tag.br{background:rgba(96,165,250,.15);color:var(--blue)}
+  .tag.us{background:rgba(16,185,129,.15);color:var(--accent2)}
+  .tag.m{background:rgba(245,196,81,.15);color:var(--gold)}
+  .catrow td{font-weight:700;background:var(--panel2)}
+  .toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .chip{background:var(--panel2);border:1px solid var(--line);color:var(--muted);padding:6px 12px;
+        border-radius:20px;font-size:12px;cursor:pointer}
+  .chip.on{background:var(--accent);color:#04130d;border-color:var(--accent);font-weight:700}
+  .foot{margin-top:30px;color:var(--muted);font-size:11px;text-align:center;line-height:1.7}
+  @media(max-width:980px){.kpis,.grid{grid-template-columns:1fr}.donut-wrap{flex-direction:column}}
+</style>
+</head>
+<body>
+<header>
+  <div class="head">
+    <div class="brand">
+      <div><h1>Carteira · Luca</h1><p>Consolidado Brasil + EUA</p></div>
+    </div>
+    <div class="head-right">
+      <div class="ref">
+        <div>Posição em <b id="dataRef">—</b></div>
+        <div>USD/BRL <b id="usdRef">—</b></div>
+      </div>
+      <a class="btn" href="/atualizar">↑ Atualizar carteira</a>
+      <a href="/logout" title="Sair" style="color:var(--muted);text-decoration:none;font-size:13px">Sair</a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap" id="app">
+  <div class="kpis">
+    <div class="card kpi">
+      <div class="lbl">Patrimônio total</div>
+      <div class="big" id="patTotal">—</div>
+      <div class="split">
+        <div><div class="t">🇧🇷 Brasil</div><div class="v" id="patBr">—</div></div>
+        <div><div class="t">🇺🇸 EUA</div><div class="v" id="patUs">—</div></div>
+      </div>
+    </div>
+    <div class="card kpi">
+      <div class="lbl">Rentab. no ano <span class="brtag">Brasil</span></div>
+      <div class="big" id="rentAno">—</div>
+      <div class="sub">CDI no ano: <span id="cdiAno">—</span></div>
+    </div>
+    <div class="card kpi">
+      <div class="lbl">Rentab. 12 meses <span class="brtag">Brasil</span></div>
+      <div class="big" id="rent12">—</div>
+      <div class="sub">CDI 12M: <span id="cdi12">—</span></div>
+    </div>
+    <div class="card kpi">
+      <div class="lbl">Rentab. 24 meses <span class="brtag">Brasil</span></div>
+      <div class="big" id="rent24">—</div>
+      <div class="sub">CDI 24M: <span id="cdi24">—</span></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Alocação por categoria</h2>
+      <div class="hint">Distribuição do patrimônio total</div>
+      <div class="donut-wrap">
+        <div class="donut-box">
+          <canvas id="donut"></canvas>
+          <div class="donut-center"><div class="a">Total</div><div class="b" id="donutTot">—</div></div>
+        </div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Meta × Real</h2>
+      <div class="hint">Barra = alocação atual · marca = meta · número = diferença</div>
+      <div id="metaBars"></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Rentabilidade acumulada <span class="brtag">Brasil (XP)</span></h2>
+      <div class="hint">Carteira composta × CDI composto · histórico da custódia Brasil</div>
+      <canvas id="rentChart" height="150"></canvas>
+    </div>
+    <div class="card">
+      <h2>Evolução do patrimônio <span class="brtag">Brasil (XP)</span></h2>
+      <div class="hint">Patrimônio da custódia Brasil — últimos 12 meses</div>
+      <canvas id="patChart" height="150"></canvas>
+    </div>
+  </div>
+
+  <div class="card full" style="margin-top:16px">
+    <h2>Ativos</h2>
+    <div class="hint">Posição detalhada — clique para filtrar por categoria</div>
+    <div class="toolbar" id="filters"></div>
+    <table>
+      <thead><tr>
+        <th>Ativo</th><th>Categoria</th><th>Origem</th>
+        <th class="num">Valor (R$)</th><th class="num">% Carteira</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <div class="foot">
+    Relatório informativo, gerado a partir dos relatórios XP Investimentos (BR) e XP Global (EUA).<br>
+    Não constitui recomendação de investimento. Rentabilidade passada não garante resultados futuros.
+  </div>
+</div>
+
+<script>
+const BRL = v => v==null?'—':v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const BRLk = v => 'R$ '+(v/1000).toLocaleString('pt-BR',{maximumFractionDigits:0})+' mil';
+const PCT = v => v==null?'—':(v>0?'+':'')+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
+let DATA=null, filtro=null;
+
+function pill(v){const c=v>=0?'pos':'neg';return `<span class="pill ${c}">${v>=0?'▲':'▼'} ${PCT(v)}</span>`;}
+
+async function load(){
+  const r = await fetch('/api/portfolio'); DATA = await r.json();
+  if(DATA.empty){document.getElementById('app').innerHTML=
+    '<div class="card" style="margin-top:40px;text-align:center"><h2>Nenhuma carteira ainda</h2><div class="hint">Faça o primeiro upload.</div><a class="btn" href="/atualizar">Atualizar carteira</a></div>';return;}
+  render();
+}
+
+function render(){
+  const d=DATA, rr=d.rentabilidade_resumo||{};
+  document.getElementById('dataRef').textContent=d.data_referencia||'—';
+  document.getElementById('usdRef').textContent=(d.usd_brl||0).toLocaleString('pt-BR',{minimumFractionDigits:2});
+  document.getElementById('patTotal').textContent=BRL(d.patrimonio_total);
+  document.getElementById('patBr').textContent=BRL(d.patrimonio_br);
+  document.getElementById('patUs').textContent=BRL(d.patrimonio_us)+ ' · US$ '+(d.patrimonio_us_usd||0).toLocaleString('pt-BR',{maximumFractionDigits:0});
+  const P=rr['Portfólio']||{}, C=rr['CDI']||{};
+  document.getElementById('rentAno').innerHTML=pill(P.ano);
+  document.getElementById('rent12').innerHTML=pill(P.m12);
+  document.getElementById('rent24').innerHTML=pill(P.m24);
+  document.getElementById('cdiAno').textContent=PCT(C.ano);
+  document.getElementById('cdi12').textContent=PCT(C.m12);
+  document.getElementById('cdi24').textContent=PCT(C.m24);
+  document.getElementById('donutTot').textContent=BRLk(d.patrimonio_total);
+
+  const cats=d.categorias.filter(c=>c.valor_brl>0);
+  // donut
+  new Chart(document.getElementById('donut'),{type:'doughnut',
+    data:{labels:cats.map(c=>c.label),datasets:[{data:cats.map(c=>c.valor_brl),
+      backgroundColor:cats.map(c=>c.cor),borderColor:'#ffffff',borderWidth:2}]},
+    options:{cutout:'70%',plugins:{legend:{display:false},tooltip:{callbacks:{
+      label:c=>` ${c.label}: ${BRL(c.raw)} (${(c.raw/d.patrimonio_total*100).toFixed(1)}%)`}}}}});
+  // legend
+  document.getElementById('legend').innerHTML=cats.map(c=>`
+    <div class="leg"><span class="dot" style="background:${c.cor}"></span>
+      <span class="nm">${c.label}</span><span class="pc">${c.real_pct.toFixed(1)}%</span>
+      <span class="vl">${BRL(c.valor_brl)}</span></div>`).join('');
+
+  // meta bars
+  const maxv=Math.max(...d.categorias.map(c=>Math.max(c.real_pct,c.meta_pct)),1);
+  document.getElementById('metaBars').innerHTML=d.categorias.filter(c=>c.meta_pct>0||c.real_pct>0).map(c=>{
+    const w=(c.real_pct/maxv*100), m=(c.meta_pct/maxv*100);
+    const gpos=c.gap_pct>=0;
+    return `<div class="mrow"><div class="top"><span>${c.label}</span>
+      <span class="g" style="color:${Math.abs(c.gap_pct)<1?'var(--muted)':(gpos?'var(--accent2)':'var(--red)')}">
+        ${c.real_pct.toFixed(1)}% <span style="color:var(--muted);font-weight:400">/ meta ${c.meta_pct.toFixed(0)}%</span></span></div>
+      <div class="track"><div class="fill" style="width:${w}%;background:${c.cor}"></div>
+        <div class="meta-mark" style="left:${m}%"></div></div></div>`;}).join('');
+
+  // rent chart
+  const s=d.serie_rentabilidade;
+  new Chart(document.getElementById('rentChart'),{type:'line',
+    data:{labels:s.map(x=>x.label),datasets:[
+      {label:'Carteira',data:s.map(x=>x.carteira_acum),borderColor:'#0e9f6e',backgroundColor:'rgba(14,159,110,.12)',fill:true,tension:.3,pointRadius:0,borderWidth:2.5},
+      {label:'CDI',data:s.map(x=>x.cdi_acum),borderColor:'#b88203',borderDash:[5,4],fill:false,tension:.3,pointRadius:0,borderWidth:2}]},
+    options:{plugins:{legend:{labels:{color:'#67727f',boxWidth:12,font:{size:11}}}},
+      scales:{x:{ticks:{color:'#67727f',maxTicksLimit:8,font:{size:10}},grid:{display:false}},
+              y:{ticks:{color:'#67727f',callback:v=>v+'%',font:{size:10}},grid:{color:'#eaeef3'}}}}});
+  // patrimonio chart
+  const ps=d.serie_patrimonio;
+  new Chart(document.getElementById('patChart'),{type:'bar',
+    data:{labels:ps.map(x=>x.label),datasets:[{data:ps.map(x=>x.patrimonio),
+      backgroundColor:'rgba(14,159,110,.5)',borderRadius:5}]},
+    options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>BRL(c.raw)}}},
+      scales:{x:{ticks:{color:'#67727f',maxTicksLimit:8,font:{size:10}},grid:{display:false}},
+              y:{ticks:{color:'#67727f',callback:v=>'R$'+(v/1e6).toFixed(1)+'M',font:{size:10}},grid:{color:'#eaeef3'}}}}});
+
+  renderFilters(cats); renderRows();
+}
+
+function renderFilters(cats){
+  document.getElementById('filters').innerHTML=
+    `<div class="chip ${!filtro?'on':''}" onclick="setF(null)">Todos</div>`+
+    cats.map(c=>`<div class="chip ${filtro===c.id?'on':''}" onclick="setF('${c.id}')">${c.label}</div>`).join('');
+}
+function setF(id){filtro=id;renderFilters(DATA.categorias.filter(c=>c.valor_brl>0));renderRows();}
+
+function renderRows(){
+  const labels={}; DATA.categorias.forEach(c=>labels[c.id]=c.label);
+  let list=DATA.ativos.filter(a=>!filtro||a.categoria===filtro);
+  const tagOf=o=>o==='BR'?'<span class="tag br">🇧🇷 BR</span>':o==='US'?'<span class="tag us">🇺🇸 EUA</span>':'<span class="tag m">● Externo</span>';
+  document.getElementById('rows').innerHTML=list.map(a=>`<tr>
+    <td>${a.nome}${a.ticker?` <span style="color:var(--muted)">· ${a.ticker}</span>`:''}</td>
+    <td style="color:var(--muted)">${labels[a.categoria]||a.categoria}</td>
+    <td>${tagOf(a.origem)}</td>
+    <td class="num">${BRL(a.valor_brl)}</td>
+    <td class="num">${a.pct_carteira.toFixed(2)}%</td></tr>`).join('');
+}
+load();
+</script>
+</body>
+</html>

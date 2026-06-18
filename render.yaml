@@ -1,0 +1,19 @@
+# Blueprint do Render — publica o site gratuitamente.
+# No Render: New > Blueprint > conecte este repositório.
+services:
+  - type: web
+    name: carteira-luca
+    runtime: python
+    plan: free
+    rootDir: .
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT --app-dir backend
+    envVars:
+      - key: APP_PASSWORD          # sua senha de acesso (defina no painel do Render)
+        sync: false
+      - key: DATABASE_URL          # connection string do Supabase (defina no painel)
+        sync: false
+      - key: SECRET_KEY            # gerado automaticamente
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.12"

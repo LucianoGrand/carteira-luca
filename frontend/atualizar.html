@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atualizar carteira · Luca</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f4f6f9;--panel:#ffffff;--panel2:#f1f4f8;--line:#e4e8ee;--txt:#1b2430;
+        --muted:#67727f;--accent:#0e9f6e;--accent2:#057a55;--red:#e02424;--blue:#2563eb}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+  .wrap{max-width:720px;margin:0 auto;padding:40px 24px 80px}
+  a.back{color:var(--muted);text-decoration:none;font-size:13px}
+  h1{font-size:24px;font-weight:800;margin:18px 0 4px}
+  .lead{color:var(--muted);font-size:14px;margin-bottom:28px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:18px;box-shadow:0 1px 3px rgba(16,24,40,.06)}
+  .step{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--accent2);font-weight:700;margin-bottom:8px}
+  label{display:block;font-size:13px;font-weight:600;margin-bottom:8px}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px}
+  .drop{border:2px dashed var(--line);border-radius:12px;padding:30px;text-align:center;cursor:pointer;transition:.15s}
+  .drop:hover,.drop.over{border-color:var(--accent);background:var(--panel2)}
+  .drop .ic{font-size:30px}.drop p{margin-top:8px;font-size:14px}
+  .drop .file{color:var(--accent2);font-weight:700;margin-top:10px;font-size:13px}
+  input[type=number],input[type=text]{width:100%;background:var(--panel2);border:1px solid var(--line);
+       color:var(--txt);padding:12px 14px;border-radius:10px;font-size:15px;font-family:inherit}
+  .row{display:flex;gap:14px}.row>div{flex:1}
+  .usd-btn{background:var(--panel2);border:1px solid var(--line);color:var(--accent2);font-size:11px;
+       padding:4px 10px;border-radius:8px;cursor:pointer;margin-top:6px}
+  .btn{background:var(--accent);color:#04130d;border:none;padding:14px;border-radius:12px;width:100%;
+       font-weight:800;font-size:15px;cursor:pointer;margin-top:6px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn:hover:not(:disabled){background:var(--accent2)}
+  .msg{padding:14px 16px;border-radius:10px;font-size:14px;margin-top:16px;display:none}
+  .msg.ok{background:rgba(16,185,129,.14);color:var(--accent2);display:block}
+  .msg.err{background:rgba(248,113,113,.14);color:var(--red);display:block}
+  .note{background:var(--panel2);border-radius:10px;padding:12px 14px;font-size:12.5px;color:var(--muted);margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="/">← Voltar ao dashboard</a>
+  <h1>Atualizar carteira</h1>
+  <p class="lead">Suba o relatório do mês e a carteira do Luca se atualiza sozinha.</p>
+
+  <form id="form">
+    <div class="card">
+      <div class="step">Passo 1 · Brasil</div>
+      <label>Relatório XPerformance (PDF)</label>
+      <div class="drop" id="drop">
+        <div class="ic">📄</div>
+        <p>Arraste o PDF aqui ou <b>clique para escolher</b></p>
+        <div class="file" id="fileName"></div>
+      </div>
+      <input type="file" id="pdf" accept="application/pdf" hidden>
+      <div class="hint">O relatório de investimentos da XP (posição + rentabilidade). Lido automaticamente.</div>
+    </div>
+
+    <div class="card">
+      <div class="step">Passo 2 · EUA (opcional)</div>
+      <label>Relatório XP Global / Investimento Internacional (PDF)</label>
+      <div class="drop" id="dropUs">
+        <div class="ic">🌎</div>
+        <p>Arraste o PDF do XP Global ou <b>clique para escolher</b></p>
+        <div class="file" id="fileNameUs"></div>
+      </div>
+      <input type="file" id="pdfUs" accept="application/pdf" hidden>
+      <div class="hint">No portal web do XP Global: <b>Imprimir → Salvar como PDF</b>.
+        ⚠️ Antes de imprimir, <b>expanda/role a seção Equities</b> até aparecerem <b>todas</b> as ações,
+        senão o PDF corta alguns ativos (o sistema avisa se faltar algo).</div>
+    </div>
+
+    <div class="card">
+      <div class="step">Passo 3 · Câmbio &amp; externos</div>
+      <div class="row">
+        <div>
+          <label>Cotação USD/BRL</label>
+          <input type="number" id="usd" step="0.0001" placeholder="(usa a do PDF)">
+          <span class="usd-btn" id="usdAuto">↻ buscar cotação atual</span>
+          <div class="hint">Deixe em branco para usar a cotação do próprio PDF do XP Global.</div>
+        </div>
+        <div>
+          <label>Bitcoin (R$) — opcional</label>
+          <input type="number" id="btc" step="0.01" placeholder="0,00">
+          <div class="hint">Posição de cripto fora da XP.</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn" id="submit" type="submit" disabled>Processar e atualizar carteira</button>
+    <div class="msg" id="msg"></div>
+  </form>
+</div>
+
+<script>
+const drop=document.getElementById('drop'),pdf=document.getElementById('pdf'),
+      fileName=document.getElementById('fileName'),submit=document.getElementById('submit'),
+      usd=document.getElementById('usd'),msg=document.getElementById('msg');
+drop.onclick=()=>pdf.click();
+['dragover','dragenter'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',ev=>{if(ev.dataTransfer.files[0]){pdf.files=ev.dataTransfer.files;onFile()}});
+pdf.onchange=onFile;
+function onFile(){if(pdf.files[0]){fileName.textContent='✓ '+pdf.files[0].name;submit.disabled=false;}}
+
+// dropzone EUA (opcional)
+const dropUs=document.getElementById('dropUs'),pdfUs=document.getElementById('pdfUs'),
+      fileNameUs=document.getElementById('fileNameUs');
+dropUs.onclick=()=>pdfUs.click();
+['dragover','dragenter'].forEach(e=>dropUs.addEventListener(e,ev=>{ev.preventDefault();dropUs.classList.add('over')}));
+['dragleave','drop'].forEach(e=>dropUs.addEventListener(e,ev=>{ev.preventDefault();dropUs.classList.remove('over')}));
+dropUs.addEventListener('drop',ev=>{if(ev.dataTransfer.files[0]){pdfUs.files=ev.dataTransfer.files;onFileUs()}});
+pdfUs.onchange=onFileUs;
+function onFileUs(){if(pdfUs.files[0])fileNameUs.textContent='✓ '+pdfUs.files[0].name;}
+
+document.getElementById('usdAuto').onclick=async()=>{
+  const r=await fetch('/api/usd');const j=await r.json();usd.value=j.usd_brl;
+};
+
+document.getElementById('form').onsubmit=async e=>{
+  e.preventDefault();
+  if(!pdf.files[0])return;
+  submit.disabled=true;submit.textContent='Processando…';msg.className='msg';
+  const fd=new FormData();
+  fd.append('pdf_br',pdf.files[0]);
+  if(pdfUs.files[0])fd.append('pdf_us',pdfUs.files[0]);
+  if(usd.value)fd.append('usd_brl',usd.value);
+  fd.append('bitcoin_brl',document.getElementById('btc').value||0);
+  try{
+    const r=await fetch('/api/update',{method:'POST',body:fd});
+    const j=await r.json();
+    if(!r.ok)throw new Error(j.detail||'Erro ao processar');
+    const v=(j.validacao_eua||[]);
+    let extra='';
+    if(v.length){extra='<div style="margin-top:10px;color:#fbbf24">⚠️ '+
+      v.map(x=>x.msg).join('<br>')+
+      '<br><br>A carteira foi salva, mas o lado EUA pode estar incompleto. '+
+      'Reexporte o PDF do XP Global com todos os ativos visíveis e suba de novo.</div>';}
+    msg.className='msg '+(v.length?'err':'ok');
+    msg.innerHTML=`✓ Carteira atualizada! Posição ${j.data_referencia} · `+
+      `Patrimônio R$ ${Number(j.patrimonio_total).toLocaleString('pt-BR',{minimumFractionDigits:2})} `+
+      `· EUA: ${j.fonte_eua==='pdf'?'lido do PDF':'dados embutidos'} · USD/BRL ${j.usd_brl}.`+extra+
+      (v.length?'':' Redirecionando…');
+    if(!v.length)setTimeout(()=>location.href='/',1800);
+  }catch(err){
+    msg.className='msg err';msg.textContent='✗ '+err.message;
+    submit.disabled=false;submit.textContent='Processar e atualizar carteira';
+  }
+};
+</script>
+</body>
+</html>

@@ -27,6 +27,12 @@ STORAGE.mkdir(exist_ok=True)
 
 def _normalize_url(url: str) -> str:
     url = (url or "").strip()
+    # remove prefixos/aspas comuns de copia-e-cola
+    if url.lower().startswith("psql "):
+        url = url[5:].strip()
+    if url.lower().startswith("database_url="):
+        url = url.split("=", 1)[1].strip()
+    url = url.strip().strip('"').strip("'").strip()
     # Supabase/Heroku dão "postgres://" — SQLAlchemy quer "postgresql+psycopg2://"
     if url.startswith("postgres://"):
         url = "postgresql+psycopg2://" + url[len("postgres://"):]
@@ -41,9 +47,22 @@ def _normalize_url(url: str) -> str:
     return url
 
 
+def _mask(url: str) -> str:
+    """Mascara a senha p/ diagnostico em log (nao vaza segredo)."""
+    return re.sub(r"(://[^:/@]+:)[^@]*(@)", r"\1***\2", url or "")
+
+
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 if DATABASE_URL:
-    ENGINE = create_engine(_normalize_url(DATABASE_URL), pool_pre_ping=True)
+    _norm = _normalize_url(DATABASE_URL)
+    try:
+        ENGINE = create_engine(_norm, pool_pre_ping=True)
+    except Exception as e:
+        print(f"[db] ERRO ao ler DATABASE_URL: {e}", flush=True)
+        print(f"[db] diagnostico (senha mascarada): len={len(DATABASE_URL)} "
+              f"comeca={DATABASE_URL[:14]!r} arrobas={DATABASE_URL.count('@')} "
+              f"normalizada={_mask(_norm)!r}", flush=True)
+        raise
 else:
     ENGINE = create_engine(f"sqlite:///{STORAGE / 'carteira.db'}")
 

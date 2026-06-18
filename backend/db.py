@@ -10,9 +10,11 @@ pode ser montada a partir dos próprios snapshots.
 """
 from __future__ import annotations
 import os
+import re
 import json
 from pathlib import Path
 from datetime import datetime, timezone
+from urllib.parse import quote
 
 from sqlalchemy import (create_engine, MetaData, Table, Column, String, Float,
                         DateTime, Text, select, delete)
@@ -24,11 +26,18 @@ STORAGE.mkdir(exist_ok=True)
 
 
 def _normalize_url(url: str) -> str:
+    url = (url or "").strip()
     # Supabase/Heroku dão "postgres://" — SQLAlchemy quer "postgresql+psycopg2://"
     if url.startswith("postgres://"):
-        url = url.replace("postgres://", "postgresql+psycopg2://", 1)
+        url = "postgresql+psycopg2://" + url[len("postgres://"):]
     elif url.startswith("postgresql://"):
-        url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
+        url = "postgresql+psycopg2://" + url[len("postgresql://"):]
+    # percent-encode a SENHA (caracteres especiais quebram o parser da URL).
+    # separa user:senha@host -> a senha vai ate o ULTIMO '@' (host nao tem '@').
+    m = re.match(r"^(postgresql\+psycopg2://)([^:/@]+):(.*)@([^@]+)$", url)
+    if m:
+        scheme, user, pwd, rest = m.groups()
+        url = f"{scheme}{user}:{quote(pwd, safe='')}@{rest}"
     return url
 
 

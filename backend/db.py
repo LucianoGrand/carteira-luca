@@ -53,8 +53,15 @@ def _mask(url: str) -> str:
 
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+DB_PASSWORD = os.environ.get("DB_PASSWORD", "").strip()
 if DATABASE_URL:
     _norm = _normalize_url(DATABASE_URL)
+    # DB_PASSWORD (se definido) substitui a senha embutida na DATABASE_URL.
+    # Assim o usuario so precisa por a senha simples nesse env, sem mexer na URL.
+    if DB_PASSWORD:
+        m = re.match(r"^(postgresql\+psycopg2://)([^:/@]+):[^@]*@(.+)$", _norm)
+        if m:
+            _norm = f"{m.group(1)}{m.group(2)}:{quote(DB_PASSWORD, safe='')}@{m.group(3)}"
     try:
         ENGINE = create_engine(_norm, pool_pre_ping=True)
     except Exception as e:
